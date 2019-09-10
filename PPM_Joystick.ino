@@ -7,7 +7,9 @@
 // Pulse start and end on falling edge. The end of one pulse is the begining of next.
 
 // The code uses Jystick library from https://github.com/MHeironimus/ArduinoJoystickLibrary/
+#define PPM_PIN 2 //Arduino pin for PPM input
 #include <Joystick.h>
+Joystick_ Joystick;
 
 unsigned long curTime = 0;
 unsigned long oldTime = 1;
@@ -35,7 +37,8 @@ void ISR1()
 void setChannel(int ch, int pulse)
 {
   // Processing pulses with length 800 - 2200 mks. 
-  float value = (pulse - 800) / 1400.0;
+  //float value = (pulse - 800) / 1400.0;
+  float value = (pulse - 500) / 1400.0;
   
   if (value < 0) 
     value = 0;
@@ -44,35 +47,43 @@ void setChannel(int ch, int pulse)
 
   switch(ch) {
     case 2:
-    Joystick.setXAxis(value*255 - 127);
+    Joystick.setYAxis(value*255 - 127);
+    //Joystick.setXAxis(value*255 - 127);
     break;
 
     case 3:
-    Joystick.setYAxis(value*255 - 127);
+    Joystick.setThrottle(value*255);
+    //Joystick.setYAxis(value*255 - 127);
     break;
 
     case 1:
-    Joystick.setZAxis(value*255 - 127);
+    Joystick.setXAxis(value*255 - 127);
+    //Joystick.setZAxis(value*255 - 127);
     break;
 
     case 4:
-    Joystick.setXAxisRotation(value*360);
+    Joystick.setRzAxis(value*360);
     break;
 
     case 5:
-    Joystick.setThrottle(value*255);    
+    Joystick.setRxAxis(value*360);
+    //Joystick.setThrottle(value*255);    
     break;
 
     case 6:
-    Joystick.setRudder(value*255);    
-    break;    
+    Joystick.setRyAxis(value*360);
+    //Joystick.setRudder(value*255);    
+    break;
+
   }
 }
 
 void setup()
 {
+  pinMode(PPM_PIN, INPUT_PULLUP);
   Joystick.begin(false);
-  attachInterrupt(0, ISR1, FALLING); 
+  attachInterrupt(digitalPinToInterrupt(PPM_PIN), ISR1, FALLING);
+  //attachInterrupt(1, ISR1, FALLING); 
 }
 
 void loop()
